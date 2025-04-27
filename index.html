@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuprinto - 3D Book Viewer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Kuprinto</div>
+        <nav>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#shop">Shop</a></li>
+                <li><a href="#submit">Submit Manuscript</a></li>
+            </ul>
+        </nav>
+    </header>
+    <section id="hero">
+        <h1>Discover Your Next Favorite Book or Manhua</h1>
+        <p>Explore, buy, or submit your creations today.</p>
+    </section>
+    <section id="shop" class="book-gallery">
+        <div class="book-card" id="book1" data-color="#7f83a4">
+            <div class="book-spine">
+                <span class="book-title">Book Title 1</span>
+            </div>
+        </div>
+        <div class="book-card" id="book2" data-color="#5b5c83">
+            <div class="book-spine">
+                <span class="book-title">Book Title 2</span>
+            </div>
+        </div>
+    </section>
+    <section id="submit">
+        <h2>Submit Your Manuscript</h2>
+        <form action="submit_manuscript.php" method="POST" enctype="multipart/form-data">
+            <input type="file" name="manuscript" required>
+            <textarea name="description" placeholder="Enter manuscript description" required></textarea>
+            <button type="submit">Submit Manuscript</button>
+        </form>
+    </section>
+    <footer>
+        <p>&copy; 2025 Kuprinto. All rights reserved.</p>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/OrbitControls.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
