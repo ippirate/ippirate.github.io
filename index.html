@@ -1,52 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kuprinto - 3D Book Viewer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kuprinto</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/OrbitControls.js"></script>
+  <style>
+    :root {
+      --primary-dark: #5b5c83;
+      --primary-light: #f7f8f8;
+      --accent1: #9a9eb1;
+      --accent2: #abb4c4;
+      --accent3: #a8aac4;
+      --muted1: #797c92;
+      --muted2: #848c9f;
+      --muted3: #6b748a;
+      --dark2: #464858;
+      --highlight: #7f83a4;
+      --cursor-color: #e74c3c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--primary-light);
+      color: var(--dark2);
+      overflow-x: hidden;
+      cursor: none;
+    }
+    header { background-color: var(--primary-dark); color: var(--primary-light); padding: 1rem 2rem; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    nav ul { display: flex; gap: 2rem; list-style: none; }
+    nav a { color: var(--primary-light); text-decoration: none; font-weight: 600; letter-spacing: 0.8px; transition: color 0.2s; }
+    nav a:hover { color: var(--highlight); }
+    .hero { background: linear-gradient(135deg, var(--accent3), var(--accent2)); padding: 6rem 2rem; text-align: center; clip-path: polygon(0 0,100% 0,100% 85%,0 100%); }
+    .hero h1 { color: var(--primary-dark); font-size: 3rem; margin-bottom: 1rem; mix-blend-mode: multiply; }
+    .hero p { color: var(--muted1); font-size: 1.2rem; max-width: 600px; margin: 0 auto; }
+    .book-shelf { display: flex; gap: 1rem; padding: 3rem 2rem; overflow-x: auto; perspective: 1000px; background-color: var(--accent2); }
+    .book-card { flex: 0 0 auto; width: 60px; height: 200px; background-color: var(--highlight); border-radius: 4px; position: relative; transform-style: preserve-3d; transition: transform 0.3s; cursor: pointer; }
+    .book-spine { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--primary-dark); display: flex; align-items: center; justify-content: center; padding: 0.5rem; writing-mode: vertical-rl; text-orientation: mixed; color: var(--primary-light); font-weight: 600; }
+    .book-card:hover { transform: rotateY(15deg) translateZ(10px); }
+    /* Overlay for 3D viewer */
+    #viewer-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
+    #viewer-overlay.visible { display: flex; }
+    #viewer-container { width: 400px; height: 600px; background: var(--primary-light); border-radius: 8px; position: relative; }
+    #close-viewer { position: absolute; top: 8px; right: 12px; background: var(--highlight); border: none; color: var(--primary-light); padding: 0.5rem; cursor: pointer; border-radius: 4px; z-index: 10; }
+    #submit { background-color: var(--accent1); padding: 3rem 2rem; clip-path: polygon(0 15%,100% 0,100% 85%,0 100%); }
+    #submit h2 { text-align: center; margin-bottom: 2rem; color: var(--primary-dark); font-size: 2rem; }
+    #submit form { max-width: 600px; margin: 0 auto; display: grid; gap: 1rem; }
+    #submit input, #submit textarea, #submit button { padding: 0.8rem; font-size: 1rem; border: 1px solid var(--accent2); border-radius: 6px; }
+    #submit button { background-color: var(--dark2); color: var(--primary-light); border: none; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+    #submit button:hover { background-color: var(--primary-dark); }
+    footer { background-color: var(--dark2); color: var(--primary-light); text-align: center; padding: 1.5rem; font-size: 0.9rem; }
+    .cursor-dot { position: fixed; top: 0; left: 0; width: 12px; height: 12px; background-color: var(--cursor-color); border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); transition: transform 0.1s ease-out; z-index: 9999; }
+  </style>
 </head>
 <body>
-    <header>
-        <div class="logo">Kuprinto</div>
-        <nav>
-            <ul>
-                <li><a href="#home">Home</a></li>
-                <li><a href="#shop">Shop</a></li>
-                <li><a href="#submit">Submit Manuscript</a></li>
-            </ul>
-        </nav>
-    </header>
-    <section id="hero">
-        <h1>Discover Your Next Favorite Book or Manhua</h1>
-        <p>Explore, buy, or submit your creations today.</p>
-    </section>
-    <section id="shop" class="book-gallery">
-        <div class="book-card" id="book1" data-color="#7f83a4">
-            <div class="book-spine">
-                <span class="book-title">Book Title 1</span>
-            </div>
-        </div>
-        <div class="book-card" id="book2" data-color="#5b5c83">
-            <div class="book-spine">
-                <span class="book-title">Book Title 2</span>
-            </div>
-        </div>
-    </section>
-    <section id="submit">
-        <h2>Submit Your Manuscript</h2>
-        <form action="submit_manuscript.php" method="POST" enctype="multipart/form-data">
-            <input type="file" name="manuscript" required>
-            <textarea name="description" placeholder="Enter manuscript description" required></textarea>
-            <button type="submit">Submit Manuscript</button>
-        </form>
-    </section>
-    <footer>
-        <p>&copy; 2025 Kuprinto. All rights reserved.</p>
-    </footer>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/OrbitControls.js"></script>
-    <script src="script.js"></script>
+  <div class="cursor-dot"></div>
+  <header>
+    <h1>Kuprinto</h1>
+    <nav>
+      <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#catalog">Catalog</a></li>
+        <li><a href="#submit">Submit Manuscript</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+  <section class="hero">
+    <h1>Books & Manhua at Your Fingertips</h1>
+    <p>Discover and purchase physical copies of top books, manhua, and comics. Sell your story by submitting your manuscript!</p>
+  </section>
+  <section id="catalog" class="book-shelf">
+    <!-- Book spines -->
+    <div class="book-card" data-color="#5b5c83">
+      <div class="book-spine">Book Title</div>
+    </div>
+    <div class="book-card" data-color="#797c92">
+      <div class="book-spine">Manhua Title</div>
+    </div>
+    <!-- More book-cards... -->
+  </section>
+  <!-- 3D Viewer Overlay -->
+  <div id="viewer-overlay">
+    <div id="viewer-container">
+      <button id="close-viewer">Close</button>
+      <canvas id="viewer-canvas"></canvas>
+    </div>
+  </div>
+  <section id="submit">
+    <h2>Submit Your Manuscript</h2>
+    <form action="/submit-manuscript" method="post" enctype="multipart/form-data">
+      <input type="text" name="name" placeholder="Your Name" required />
+      <input type="email" name="email" placeholder="Your Email" required />
+      <input type="text" name="title" placeholder="Manuscript Title" required />
+      <textarea name="description" rows="4" placeholder="Brief Description" required></textarea>
+      <input type="file" name="manuscript" accept=".pdf,.doc,.docx" required />
+      <button type="submit">Submit</button>
+    </form>
+  </section>
+  <footer id="contact">
+    &copy; 2025 Kuprinto. All rights reserved.<br />
+    Contact us at <a href="mailto:info@kuprinto.com" style="color: var(--highlight);">info@kuprinto.com</a>
+  </footer>
+  <script>
+    // Cursor follow dot
+    const cursorDot = document.querySelector('.cursor-dot');
+    document.addEventListener('mousemove', e => cursorDot.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`);
+    // Three.js scene
+    let scene, camera, renderer, controls, bookMesh;
+    function initViewer(color) {
+      const container = document.getElementById('viewer-container');
+      const canvas = document.getElementById('viewer-canvas');
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(45, container.clientWidth/container.clientHeight, 0.1, 1000);
+      camera.position.set(0, 0, 5);
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      // Light
+      const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
+      scene.add(light);
+      // Book geometry
+      const geometry = new THREE.BoxGeometry(1, 1.5, 0.3);
+      const material = new THREE.MeshStandardMaterial({ color });
+      bookMesh = new THREE.Mesh(geometry, material);
+      scene.add(bookMesh);
+      animate();
+    }
+    function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }
+    // Open viewer on click
+    document.querySelectorAll('.book-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const color = card.getAttribute('data-color') || '#aaaaaa';
+        document.getElementById('viewer-overlay').classList.add('visible');
+        if (!scene) initViewer(color);
+        bookMesh.material.color.set(color);
+      });
+    });
+    // Close viewer
+    document.getElementById('close-viewer').addEventListener('click', () => {
+      document.getElementById('viewer-overlay').classList.remove('visible');
+    });
+  </script>
 </body>
 </html>
